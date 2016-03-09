@@ -16,7 +16,8 @@ public class Main extends Application {
     private LineChart<Number,Number> lineChart=new LineChart<Number,Number>(x,y);
 
     private WAV wav=new WAV("am49.wav");
-    private Byte[] data;
+    private Integer[] data;
+    private Byte[] byteData;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -25,12 +26,17 @@ public class Main extends Application {
         lineChart.getData().add(Series);
         lineChart.getData().add(appSeries);
         primaryStage.show();
+
         data=wav.readData();
+        //byteData=wav.readByteData();
 
         wav.readHeader();
+
         for(int i=0;i<data.length;i++) {
             System.out.println("data["+i+"]"+data[i].byteValue());
         }
+        /*for(int i=0;i<byteData.length;i++)
+            System.out.println(byteData[i]);*/
     }
 
 

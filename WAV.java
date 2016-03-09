@@ -10,8 +10,10 @@ import java.util.List;
 public class WAV
 {
     private InputStream wavIn;
-    private List<Byte> datalList=new ArrayList<Byte>();
-    private Byte[] data;
+    private List<Integer> datalList=new ArrayList<Integer>();
+    private List<Byte> byteList=new ArrayList<Byte>();
+    private Integer[] data;
+    private Byte[] byteData;
 
     public WAV(String fileName)
     {
@@ -23,12 +25,12 @@ public class WAV
         }
     }
 
-    public Byte[] readData()
+    public Integer[] readData()
     {
         try {
             for(int d=0;d!=-1;d=wavIn.read()) {
                 int i=0;
-                datalList.add((byte) d);
+                datalList.add(d);
                 /*System.out.println((byte)d);
                 System.out.println(datalList.get(i));*/
                 i++;
@@ -37,12 +39,31 @@ public class WAV
         {
             e.printStackTrace();
         }
-        data= datalList.toArray(new Byte[0]);
+        data= datalList.toArray(new Integer[0]);
 
         return data;
     }
 
-    public void readHeader()
+    public Byte[] readByteData()
+    {
+        try {
+            for(int d=0;d!=-1;d=wavIn.read()) {
+                int i=0;
+                byteList.add((byte) d);
+                /*System.out.println((byte)d);
+                System.out.println(datalList.get(i));*/
+                i++;
+            }
+        }catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        byteData= byteList.toArray(new Byte[0]);
+
+        return byteData;
+    }
+
+    public void readHeader()//RIFF,WAVE,fmt のヘッダを読み込む
     {
         do {
             int c;
@@ -60,25 +81,24 @@ public class WAV
             if((c=checkHeader("fmt "))!=-1) {
                 dataInf.fmtBytes = readBytes(4, c);
                 System.out.println("fmtチャンクサイズ:"+dataInf.fmtBytes+"byte");
-                System.out.println("fmtC"+c+"data"+data[c]);
 
                 dataInf.fmtID=readBytes(2,c+=4);
                 System.out.println("フォーマットID:"+dataInf.fmtID);
-                System.out.println("IDC"+c+"data"+data[c]);
 
                 dataInf.ch=readBytes(2,c+=2);
                 System.out.println("チャンネル数:"+dataInf.ch);
-                System.out.println("CHC"+c+"data"+data[c]);
 
                 dataInf.samplingRate=readBytes(4,c+=2);
                 System.out.println("サンプリングレート:"+dataInf.samplingRate);
-                System.out.println("reC"+c+"data"+data[c]);
 
                 dataInf.dataSpeed=readBytes(4,c+=4);
                 System.out.println("データ速度:"+dataInf.dataSpeed);
-                System.out.println("dataC"+c+"data"+data[c]);
 
-                //dataInf.blockSize=readBytes(2,c+16);
+                dataInf.blockSize=readBytes(2,c+=4);
+                System.out.println("ブロックサイズ(Byte/Sample*チャンネル数):"+dataInf.blockSize);
+
+                dataInf.bitParSample=readBytes(2,c+=2);
+                System.out.println("サンプルあたりのビット数(bit/sample):"+dataInf.bitParSample);
 
             }
             else
