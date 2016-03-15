@@ -20,6 +20,7 @@ public class Main extends Application {
     private WAV wav=new WAV("am49.wav");//ド
     //private WAV wav=new WAV("am50.wav");//レ
     //private WAV wav=new WAV("am27.wav");//ドレミファソ
+
     private Integer[] data;
     private Byte[] byteData;
     private Integer[] soundData;

@@ -125,7 +125,7 @@ public class WAV
         for (int i = 2*(byteNum-1); i >= 0; i -= 2)
             bytes += (data[indexNum + j--] * Math.pow(16, i));
 
-        return bytes;
+        return (byteNum<3)?((short)bytes):(bytes);
     }
 
     private int checkHeader(String cd)//data配列を走査してヘッダを見つける
