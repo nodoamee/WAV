@@ -12,10 +12,10 @@ public class WAV
     private InputStream wavIn;
     private List<Integer> datalList=new ArrayList<Integer>();
     private List<Byte> byteList=new ArrayList<Byte>();
-    private List<Integer> soundList=new ArrayList<Integer>();
+    private List<Short> soundList=new ArrayList<Short>();
     private Integer[] data;
     private Byte[] byteData;
-    private Integer[] soundData;
+    private Short[] soundData;
 
     public WAV(String fileName)
     {
@@ -30,7 +30,8 @@ public class WAV
     public Integer[] readData()
     {
         try {
-            for(int d=wavIn.read();d!=-1;d=wavIn.read())
+            int d;
+            while((d=wavIn.read())!=-1)
                 datalList.add(d);
 
         }catch(IOException e)
@@ -61,7 +62,7 @@ public class WAV
         do {
             int c;
             if ((c = checkHeader("RIFF")) != -1) {//RIFFヘッダ確認
-                dataInf.fileSize=readBytes(4,c)+8;
+                dataInf.fileSize=readBytes(4, c)+8;
                 System.out.println("ファイルサイズ:"+dataInf.fileSize+"byte");
             } else
                 break;
@@ -76,10 +77,10 @@ public class WAV
                 dataInf.fmtBytes = readBytes(4, c);
                 System.out.println("fmtチャンクサイズ:"+dataInf.fmtBytes+"byte");
 
-                dataInf.fmtID=readBytes(2,c+=4);
+                dataInf.fmtID=readBytes(2, c += 4);
                 System.out.println("フォーマットID:"+dataInf.fmtID);
 
-                dataInf.ch=readBytes(2,c+=2);
+                dataInf.ch=readBytes(2, c += 2);
                 System.out.println("チャンネル数:"+dataInf.ch);
 
                 dataInf.samplingRate=readBytes(4,c+=2);
@@ -99,15 +100,17 @@ public class WAV
                 break;
 
             if((c=checkHeader("data"))!=-1) {
+                dataInf.dataPoint=c;
                 System.out.println("dataヘッダ確認");
-                dataInf.soundDataSize=readBytes(4,c);
-                System.out.println("波形データのバイト数:"+c+":"+dataInf.soundDataSize);
+                dataInf.soundDataSize=readBytes(4, c);
+                System.out.println("波形データのバイト数:"+dataInf.soundDataSize);
                 for(int i=0;i<dataInf.soundDataSize;i+=2) {
-                    soundList.add(readBytes(2, i + c + 4));
+                    //soundList.add((short)readBytesB(2, i + c + 4));
+                    soundList.add((short)readBytes(2, i + c + 4));
                     //System.out.println("readBytes:" + (i + c + 4));
                 }
                     //soundList.add(data[c + i].shortValue());
-                soundData=soundList.toArray(new Integer[0]);
+                soundData=soundList.toArray(new Short[0]);
             }
             else
                 break;
@@ -128,6 +131,19 @@ public class WAV
         return (byteNum<3)?((short)bytes):(bytes);
     }
 
+    private int readBytesB(int byteNum,int indexNum)//ビッグエンディアンでindexNum+1番目からbyteNumバイト読み込む
+    {
+        indexNum++;
+        int bytes=0;
+        int j=0;
+        for(int i=2*(byteNum-1);i>=0;i-=2) {
+            if(indexNum+i<=data.length)
+                bytes += (data[indexNum + j++] * Math.pow(16, i));
+        }
+
+        return (byteNum<3)?((short)bytes):(bytes);
+    }
+
     private int checkHeader(String cd)//data配列を走査してヘッダを見つける
     {
         int count = 0;
@@ -143,7 +159,7 @@ public class WAV
     }
 
 
-    public Integer[] getSoundData()
+    public Short[] getSoundData()
     {
         return soundData;
     }
@@ -159,5 +175,7 @@ public class WAV
         public static int blockSize;
         public static int bitParSample;
         public static int soundDataSize;
+
+        public static int dataPoint;
     }
 }
